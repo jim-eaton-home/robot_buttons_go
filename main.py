@@ -1,4 +1,3 @@
-robot.yahboom_tiny_bit.start()
 def on_button_pressed_a():
     global pressCountA, distanceToBad, letsGo
     pressCountA += 1
@@ -30,13 +29,14 @@ def on_button_pressed_a():
 input.on_button_pressed(Button.A, on_button_pressed_a)
 
 def on_button_pressed_b():
-    global letsGo, distanceToBad, pressedButtonB
+    global letsGo, distanceToBad, pressedButtonB, pressCountA
     robot.motor_stop()
     letsGo = False
     distanceToBad = 0
     robot.motor_stop()
     basic.clear_screen()
     if pressedButtonB:
+        pressCountA += 1
         basic.show_icon(IconNames.SKULL)
     else:
         basic.show_icon(IconNames.ASLEEP)
@@ -49,6 +49,7 @@ pressedButtonB = False
 letsGo = False
 pressCountA = 0
 distanceToBad = 0
+robot.yahboom_tiny_bit.start()
 distanceToBad = 10
 basic.clear_screen()
 basic.show_icon(IconNames.SURPRISED)

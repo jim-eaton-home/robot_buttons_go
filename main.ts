@@ -1,4 +1,3 @@
-robot.yahboomTinyBit.start()
 input.onButtonPressed(Button.A, function on_button_pressed_a() {
     let started: boolean;
     
@@ -44,6 +43,7 @@ input.onButtonPressed(Button.B, function on_button_pressed_b() {
     robot.motorStop()
     basic.clearScreen()
     if (pressedButtonB) {
+        pressCountA += 1
         basic.showIcon(IconNames.Skull)
     } else {
         basic.showIcon(IconNames.Asleep)
@@ -57,6 +57,7 @@ let pressedButtonB = false
 let letsGo = false
 let pressCountA = 0
 let distanceToBad = 0
+robot.yahboomTinyBit.start()
 distanceToBad = 10
 basic.clearScreen()
 basic.showIcon(IconNames.Surprised)
