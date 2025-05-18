@@ -56,7 +56,7 @@ input.onButtonPressed(Button.B, function on_button_pressed_b() {
 function robot_avoid() {
     //  the simulator says this will be right turn
     robot.motorStop()
-    robot.motorSteer(200, 100, 200)
+    robot.motorTank(100, -100, 175)
     robot.motorStop()
 }
 

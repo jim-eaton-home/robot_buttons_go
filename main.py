@@ -49,7 +49,7 @@ input.on_button_pressed(Button.B, on_button_pressed_b)
 def robot_avoid():
     # the simulator says this will be right turn
     robot.motor_stop()
-    robot.motor_steer(200, 100, 200)
+    robot.motor_tank(100, -100, 175)
     robot.motor_stop() 
 
 pressedButtonB = False
