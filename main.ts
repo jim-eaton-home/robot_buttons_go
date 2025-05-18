@@ -17,12 +17,11 @@ input.onButtonPressed(Button.A, function on_button_pressed_a() {
         basic.showString("!")
         distanceToBad = robot.obstacleDistance()
         while (letsGo && !pressedButtonB) {
+            // short pause to allow the processor to catch up the events
+            basic.pause(10)
             distanceToBad = robot.obstacleDistance()
             if (distanceToBad <= 30) {
-                //  the simulator says this will be right turn
-                robot.motorStop()
-                robot.motorSteer(200, 100, 200)
-                robot.motorStop()
+                robot_avoid()
                 started = false
             }
             
@@ -44,6 +43,7 @@ input.onButtonPressed(Button.B, function on_button_pressed_b() {
     basic.clearScreen()
     if (pressedButtonB) {
         pressCountA += 1
+        robot_avoid()
         basic.showIcon(IconNames.Skull)
     } else {
         basic.showIcon(IconNames.Asleep)
@@ -53,6 +53,13 @@ input.onButtonPressed(Button.B, function on_button_pressed_b() {
     pressedButtonB = !pressedButtonB
     basic.pause(100)
 })
+function robot_avoid() {
+    //  the simulator says this will be right turn
+    robot.motorStop()
+    robot.motorSteer(200, 100, 200)
+    robot.motorStop()
+}
+
 let pressedButtonB = false
 let letsGo = false
 let pressCountA = 0
