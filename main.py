@@ -70,11 +70,107 @@ def robot_avoid():
     robot.motor_tank(100, -100, 175)
     robot.motor_stop()
 
+# woof woof! two short falling chirps sound like a bark
+def bark():
+    music.play(music.create_sound_expression(WaveShape.SQUARE,
+            500,
+            120,
+            255,
+            0,
+            150,
+            SoundExpressionEffect.NONE,
+            InterpolationCurve.CURVE),
+        music.PlaybackMode.UNTIL_DONE)
+    basic.pause(80)
+    music.play(music.create_sound_expression(WaveShape.SQUARE,
+            500,
+            120,
+            255,
+            0,
+            150,
+            SoundExpressionEffect.NONE,
+            InterpolationCurve.CURVE),
+        music.PlaybackMode.UNTIL_DONE)
+
+def dog_party():
+    # ears at the top corners, dark pixels for eyes, tongue at the bottom
+    basic.show_leds("""
+        # . . . #
+        # # # # #
+        # . # . #
+        # # # # #
+        . . # . .
+        """)
+    bark()
+    if not (letsGo):
+        # tail wag: only wiggle the wheels when we are parked
+        robot.motor_tank(70, -70, 120)
+        robot.motor_tank(-70, 70, 120)
+        robot.motor_tank(70, -70, 120)
+        robot.motor_tank(-70, 70, 120)
+        robot.motor_stop()
+    basic.show_string("DOG!")
+    basic.clear_screen()
+
+# the camera watcher: the K210 does the seeing, we just listen.
+# object_detect() waits for a $09..# serial message and returns the
+# object id as text ("11" = dog). Empty text means the message was
+# something else or got garbled, so we just skip it.
+def on_forever():
+    global seen, objId, newSighting, lastSeen, lastSeenTime
+    seen = k210_models.object_detect()
+    if len(seen) > 0:
+        objId = parse_float(seen)
+        # same object still in frame = stay quiet. React when the
+        # object changes or it left the frame for a few seconds.
+        newSighting = objId != lastSeen or input.running_time() - lastSeenTime > 3000
+        if objId == 11:
+            if newSighting:
+                dog_party()
+            lastSeen = objId
+            lastSeenTime = input.running_time()
+        elif objId >= 0 and objId <= 19:
+            if newSighting:
+                basic.show_string(objectNames[objId])
+                basic.clear_screen()
+            lastSeen = objId
+            lastSeenTime = input.running_time()
+basic.forever(on_forever)
+
+newSighting = False
+objId = 0
+seen = ""
 pressedButtonB = False
 letsGo = False
 pressCountA = 0
 distanceToBad = 0
+# what the K210 object detection ids 0-19 mean
+objectNames = ["PLANE",
+    "BIKE",
+    "BIRD",
+    "BOAT",
+    "BOTTLE",
+    "BUS",
+    "CAR",
+    "CAT",
+    "CHAIR",
+    "COW",
+    "TABLE",
+    "DOG",
+    "HORSE",
+    "MOTO",
+    "PERSON",
+    "PLANT",
+    "SHEEP",
+    "SOFA",
+    "TRAIN",
+    "TV"]
+lastSeen = -1
+lastSeenTime = 0
 robot.yahboom_tiny_bit.start()
+# hook the serial port to the K210 camera: P1 = TX, P2 = RX, 115200 baud
+k210_models.initialization()
+serial.set_rx_buffer_size(64)
 distanceToBad = 10
 basic.clear_screen()
 basic.show_icon(IconNames.SURPRISED)

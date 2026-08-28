@@ -1,16 +1,18 @@
 {
     "name": "robot_buttons_go",
-    "description": "",
+    "description": "Tiny:bit Pro robot with K210 camera dog recognition",
     "dependencies": {
         "core": "*",
         "radio": "*",
         "microphone": "*",
-        "microbit-robot": "github:microsoft/microbit-robot#v2.7.4"
+        "microbit-robot": "github:microsoft/microbit-robot#v2.7.4",
+        "k210_module": "github:YahboomTechnology/K210-Module#v1.0.1"
     },
     "files": [
         "main.blocks",
         "main.ts",
         "README.md",
+        "K210_CAMERA_GUIDE.md",
         "main.py"
     ],
     "testFiles": [
