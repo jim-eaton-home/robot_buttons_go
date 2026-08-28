@@ -1,6 +1,14 @@
 
 > Open this page at [https://jim-eaton-home.github.io/robot_buttons_go/](https://jim-eaton-home.github.io/robot_buttons_go/)
 
+## 🐶 New: K210 camera dog recognition
+
+The Tiny:bit Pro's K210 vision module now watches for objects while the robot
+runs. When it sees a dog (a real one, or a picture), the robot barks, shows a
+dog face, wags, and scrolls **DOG!** — anything else it recognizes, it names.
+Setup steps (including the one-time TF card swap on the camera) are in
+[K210_CAMERA_GUIDE.md](K210_CAMERA_GUIDE.md).
+
 ## Use as Extension
 
 This repository can be added as an **extension** in MakeCode.
