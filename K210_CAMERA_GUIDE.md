@@ -28,27 +28,27 @@ the classic VOC-20 dataset — 20 kinds of objects, and **id 11 is DOG**.
 
 ## Step 1 — put the object detection program on the K210's TF card
 
-The K210 runs whatever is named `main.py` in the root of its TF card. Out of the
-box it runs a different demo, so we swap in the object detection one
-(from Yahboom's tutorial *3.4 Object detection*):
+The K210 runs whatever is named `main.py` in the root of its TF card, and
+loads its neural-network model from a `KPU` folder on the same card. **Our
+card shipped blank**, so this repo carries the card contents in the
+[`k210_tf_card/`](k210_tf_card/) folder:
 
-1. Power everything off. Remove the TF card from the slot on the K210 module.
-2. Put it in a card reader on your computer.
-3. In the card's root, rename the existing `main.py` to `main_original.py`
-   (so you can put it back later).
-4. Open the `k210` folder on the card, find **`2.5_3.4_object_detect.py`**,
-   copy it to the card's **root**, and rename the copy to **`main.py`**.
-5. Eject, put the card back in the K210, done.
+- `k210_tf_card/main.py` — the object-detection program (goes in the card
+  root as `main.py`). It draws boxes on the K210's screen (red + "DOG!" for
+  dogs) and reports sightings to the micro:bit.
+- The **model file** (`KPU/voc20_object_detect/voc20_detect.kmodel`) is a
+  ~2 MB compiled neural network we can't reconstruct — download Yahboom's
+  `AI_Vision_Code` zip and copy its whole `KPU` folder to the card root.
 
-If the files are missing from your card, Yahboom's downloads for the Tiny:bit
-Pro are here:
-<https://drive.google.com/drive/folders/18IGGnEvCQF-412gYym7tBVbrdZ6a6hng>
-(also linked from <https://github.com/YahboomTechnology/TinybitPro>).
+Full step-by-step (FAT32 formatting, download links, final card layout,
+what-if-the-screen-is-dead) is in
+[`k210_tf_card/README.md`](k210_tf_card/README.md).
 
 **Check it worked:** power the car on. The K210's screen should show the live
 camera image, and when it recognizes something it draws a green box around it
 with the object's name. This works even with no micro:bit program at all — the
-recognition is entirely on the K210.
+recognition is entirely on the K210. A red screen saying *"model file not
+found"* means the `KPU` folder still isn't on the card.
 
 ## Step 2 — flash the micro:bit program
 
@@ -109,5 +109,7 @@ alongside the driving code.
   [TinybitPro](https://github.com/YahboomTechnology/TinybitPro) under
   *08.AI vision course*.
 
-To go back to the original K210 demo, rename `main_original.py` back to
-`main.py` on the TF card.
+To run a different K210 function later, copy any demo from Yahboom's `k210`
+scripts folder (in the `AI_Vision_Code` download) over the card's `main.py` —
+our object-detection `main.py` stays safe in this repo's `k210_tf_card/`
+folder either way.
