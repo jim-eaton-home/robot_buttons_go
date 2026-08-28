@@ -86,36 +86,69 @@ function dogParty () {
     basic.showString("DOG!")
     basic.clearScreen()
 }
+// debug helper: shake the robot to see the last raw camera message
+input.onGesture(Gesture.Shake, function () {
+    if (lastRaw.length > 0) {
+        basic.showString(lastRaw)
+    } else {
+        basic.showString("NO MSG")
+    }
+    basic.clearScreen()
+})
 // the camera watcher: the K210 does the seeing, we just listen.
-// object_detect() waits for a $09..# serial message and returns the
-// object id as text ("11" = dog). Empty text means the message was
-// something else or got garbled, so we just skip it.
+// It streams $09<id>|# over serial; id "11" = dog. We wait for
+// cameraReady so we never start a read before the serial port has
+// been switched to the camera pins (a pending read blocks the switch).
 basic.forever(function () {
-    seen = k210_models.object_detect()
-    if (seen.length > 0) {
-        objId = parseFloat(seen)
-        // same object still in frame = stay quiet. React when the
-        // object changes or it left the frame for a few seconds.
-        newSighting = objId != lastSeen || input.runningTime() - lastSeenTime > 3000
-        if (objId == 11) {
-            if (newSighting) {
-                dogParty()
+    if (!(cameraReady)) {
+        basic.pause(50)
+    } else {
+        raw = serial.readUntil(serial.delimiters(Delimiters.Hash))
+        if (raw.length > 0) {
+            // heartbeat: top-right pixel flips on every camera message
+            led.toggle(4, 0)
+            lastRaw = raw
+            marker = raw.indexOf("$09")
+            if (marker >= 0) {
+                // collect the digits right after $09, ignore the rest
+                digits = ""
+                pos = marker + 3
+                while (pos < raw.length && "0123456789".includes(raw.charAt(pos))) {
+                    digits = "" + digits + raw.charAt(pos)
+                    pos += 1
+                }
+                if (digits.length > 0) {
+                    objId = parseFloat(digits)
+                    // same object still in frame = stay quiet. React when the
+                    // object changes or it left the frame for a few seconds.
+                    newSighting = objId != lastSeen || input.runningTime() - lastSeenTime > 3000
+                    if (objId == 11) {
+                        if (newSighting) {
+                            dogParty()
+                        }
+                        lastSeen = objId
+                        lastSeenTime = input.runningTime()
+                    } else if (objId >= 0 && objId <= 19) {
+                        if (newSighting) {
+                            basic.showString(objectNames[objId])
+                            basic.clearScreen()
+                        }
+                        lastSeen = objId
+                        lastSeenTime = input.runningTime()
+                    }
+                }
             }
-            lastSeen = objId
-            lastSeenTime = input.runningTime()
-        } else if (objId >= 0 && objId <= 19) {
-            if (newSighting) {
-                basic.showString(objectNames[objId])
-                basic.clearScreen()
-            }
-            lastSeen = objId
-            lastSeenTime = input.runningTime()
         }
     }
 })
 let newSighting = false
 let objId = 0
-let seen = ""
+let raw = ""
+let lastRaw = ""
+let marker = 0
+let digits = ""
+let pos = 0
+let cameraReady = false
 let pressedButtonB = false
 let letsGo = false
 let pressCountA = 0
@@ -124,10 +157,13 @@ let distanceToBad = 0
 let objectNames = ["PLANE", "BIKE", "BIRD", "BOAT", "BOTTLE", "BUS", "CAR", "CAT", "CHAIR", "COW", "TABLE", "DOG", "HORSE", "MOTO", "PERSON", "PLANT", "SHEEP", "SOFA", "TRAIN", "TV"]
 let lastSeen = -1
 let lastSeenTime = 0
-robot.yahboomTinyBit.start()
-// hook the serial port to the K210 camera: P1 = TX, P2 = RX, 115200 baud
+// hook serial to the K210 camera FIRST (P1 = TX, P2 = RX, 115200 baud):
+// this must happen before robot start, which pauses and would let the
+// watcher grab the serial port while it still points at USB
 k210_models.initialization()
 serial.setRxBufferSize(64)
+cameraReady = true
+robot.yahboomTinyBit.start()
 distanceToBad = 10
 basic.clearScreen()
 basic.showIcon(IconNames.Surprised)
