@@ -86,9 +86,15 @@ alongside the driving code.
 
 - **No image on the K210 screen** → TF card not seated, or `main.py` swap
   didn't happen (bad rename). Re-check Step 1.
-- **K210 draws boxes but the micro:bit never reacts** → the serial link. Make
-  sure the module is fully seated in its socket, and that the program was
-  actually flashed (you should see the surprised face at startup).
+- **K210 draws boxes but the micro:bit never reacts** → the serial link. Two
+  built-in probes: the **top-right LED pixel flips every time any camera
+  message arrives** (flickering pixel = link alive), and **shaking the robot
+  scrolls the last raw message** ("NO MSG" = nothing has ever arrived). If the
+  K210 shows boxes but the pixel never flickers, check the 4-pin serial cable
+  between the K210 module and the car board (it carries the data lines), and
+  make sure you flashed the latest program — early versions had a startup
+  race where the micro:bit could keep listening to USB instead of the camera
+  pins.
 - **It won't recognize your dog picture** → the model needs a clear, close,
   well-lit view; small/blurry/sideways pictures score below its 70% confidence
   threshold and are ignored. Cartoon dogs often don't count — it learned from

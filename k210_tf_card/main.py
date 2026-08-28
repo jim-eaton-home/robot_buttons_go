@@ -90,8 +90,10 @@ while True:
             # report the most prominent (largest) object to the micro:bit
             if l[2] * l[3] > best[2] * best[3]:
                 best = l
-        if time.ticks_ms() - last_send > 200:
-            send_msg("$09%02d|#" % best[4])
+        if time.ticks_diff(time.ticks_ms(), last_send) > 200:
+            msg = "$09%02d|#" % best[4]
+            send_msg(msg)
+            print(msg)          # also visible in CanMV IDE serial terminal
             last_send = time.ticks_ms()
     img.draw_string(0, 0, "%2.1ffps" % (fps), color=(0, 60, 128), scale=2.0)
     lcd.display(img)

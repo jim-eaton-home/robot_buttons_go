@@ -112,34 +112,63 @@ def dog_party():
     basic.show_string("DOG!")
     basic.clear_screen()
 
+# debug helper: shake the robot to see the last raw camera message
+def on_gesture_shake():
+    if len(lastRaw) > 0:
+        basic.show_string(lastRaw)
+    else:
+        basic.show_string("NO MSG")
+    basic.clear_screen()
+input.on_gesture(Gesture.SHAKE, on_gesture_shake)
+
 # the camera watcher: the K210 does the seeing, we just listen.
-# object_detect() waits for a $09..# serial message and returns the
-# object id as text ("11" = dog). Empty text means the message was
-# something else or got garbled, so we just skip it.
+# It streams $09<id>|# over serial; id "11" = dog. We wait for
+# cameraReady so we never start a read before the serial port has
+# been switched to the camera pins (a pending read blocks the switch).
 def on_forever():
-    global seen, objId, newSighting, lastSeen, lastSeenTime
-    seen = k210_models.object_detect()
-    if len(seen) > 0:
-        objId = parse_float(seen)
-        # same object still in frame = stay quiet. React when the
-        # object changes or it left the frame for a few seconds.
-        newSighting = objId != lastSeen or input.running_time() - lastSeenTime > 3000
-        if objId == 11:
-            if newSighting:
-                dog_party()
-            lastSeen = objId
-            lastSeenTime = input.running_time()
-        elif objId >= 0 and objId <= 19:
-            if newSighting:
-                basic.show_string(objectNames[objId])
-                basic.clear_screen()
-            lastSeen = objId
-            lastSeenTime = input.running_time()
+    global raw, lastRaw, marker, digits, pos, objId, newSighting, lastSeen, lastSeenTime
+    if not (cameraReady):
+        basic.pause(50)
+    else:
+        raw = serial.read_until(serial.delimiters(Delimiters.HASH))
+        if len(raw) > 0:
+            # heartbeat: top-right pixel flips on every camera message
+            led.toggle(4, 0)
+            lastRaw = raw
+            marker = raw.index_of("$09")
+            if marker >= 0:
+                # collect the digits right after $09, ignore the rest
+                digits = ""
+                pos = marker + 3
+                while pos < len(raw) and "0123456789".includes(raw.char_at(pos)):
+                    digits = "" + digits + raw.char_at(pos)
+                    pos += 1
+                if len(digits) > 0:
+                    objId = parse_float(digits)
+                    # same object still in frame = stay quiet. React when the
+                    # object changes or it left the frame for a few seconds.
+                    newSighting = objId != lastSeen or input.running_time() - lastSeenTime > 3000
+                    if objId == 11:
+                        if newSighting:
+                            dog_party()
+                        lastSeen = objId
+                        lastSeenTime = input.running_time()
+                    elif objId >= 0 and objId <= 19:
+                        if newSighting:
+                            basic.show_string(objectNames[objId])
+                            basic.clear_screen()
+                        lastSeen = objId
+                        lastSeenTime = input.running_time()
 basic.forever(on_forever)
 
 newSighting = False
 objId = 0
-seen = ""
+raw = ""
+lastRaw = ""
+marker = 0
+digits = ""
+pos = 0
+cameraReady = False
 pressedButtonB = False
 letsGo = False
 pressCountA = 0
@@ -167,10 +196,13 @@ objectNames = ["PLANE",
     "TV"]
 lastSeen = -1
 lastSeenTime = 0
-robot.yahboom_tiny_bit.start()
-# hook the serial port to the K210 camera: P1 = TX, P2 = RX, 115200 baud
+# hook serial to the K210 camera FIRST (P1 = TX, P2 = RX, 115200 baud):
+# this must happen before robot start, which pauses and would let the
+# watcher grab the serial port while it still points at USB
 k210_models.initialization()
 serial.set_rx_buffer_size(64)
+cameraReady = True
+robot.yahboom_tiny_bit.start()
 distanceToBad = 10
 basic.clear_screen()
 basic.show_icon(IconNames.SURPRISED)
