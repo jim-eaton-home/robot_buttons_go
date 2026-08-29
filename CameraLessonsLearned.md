@@ -147,11 +147,17 @@ how startup gets reordered later (e.g. by blocks editing).
    in CanMV IDE). Merged to master in `d21e2f0` on user request.
 6. Training-paths discussion (§7). This document: written after that.
 
-Status at time of writing: fix merged to master; user re-flashing — field
-confirmation of the dog party still pending. If it still fails with the
-heartbeat pixel dark, suspect the 4-pin serial cable between the K210 module
-and the car board (it carries the data lines; the camera can appear fully
-alive without it).
+Status: **CONFIRMED WORKING** (2026-08-29). With the fix flashed, the robot
+detected dogs and barked — the full chain (camera → serial → micro:bit
+reaction) is field-verified. One known rough edge, deliberately left as-is:
+the tail-wag wheel wiggle inherits motor timings from the pre-existing avoid
+routine and doesn't wag convincingly on the real car ("good enough" per the
+user). To tune it someday, adjust the four `robot.motorTank(±70, ∓70, 120)`
+calls in `dogParty()` / `dog_party()` in `main.ts` / `main.py`.
+(Kept for future debugging: if the heartbeat pixel is ever dark while the
+K210 draws boxes, suspect the 4-pin serial cable between the K210 module and
+the car board — it carries the data lines, and the camera appears fully
+alive without it.)
 
 ## 7. Adding new object classes (training paths)
 
