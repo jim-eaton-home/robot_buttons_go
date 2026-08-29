@@ -13,6 +13,7 @@
         "main.ts",
         "README.md",
         "K210_CAMERA_GUIDE.md",
+        "CameraLessonsLearned.md",
         "main.py"
     ],
     "testFiles": [
